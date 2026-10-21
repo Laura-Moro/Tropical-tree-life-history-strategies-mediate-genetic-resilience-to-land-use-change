@@ -2,9 +2,6 @@
 #1# extract trait data and habitat data for each species
 #2# caluclate habitata ammount at the sampling location 
 
-###check repository see changes 
-
-
 library(terra)
 library(dplyr)
 library(tidyr)
