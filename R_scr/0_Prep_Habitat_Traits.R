@@ -7,7 +7,7 @@ library(dplyr)
 library(tidyr)
 
 #load data
-Sp_H_T <- read.csv("Data/FIGSHARE/6b-output-20260830.csv") # habitata ammount data form figshare
+Sp_H_T <- read.csv("Data/6b-output-20260830.csv") # habitata ammount data form figshare
 samp_locations <- read.csv("Data/Sampling_location_Eco.csv") #all smapling location
 pops <- read.csv("Data/PopGen_stats_pops.csv") #sampling loacations for each species 
 traits <-  read.csv("Data/Original_trait_values.csv")
@@ -82,6 +82,7 @@ sp_keep <- unique(pops_PR$sp_code)
 
 sp_keep <- intersect(sp_keep, names(habitat_raw_51))
 
+#these data are not on github
 habitat_raw_51 <- rast("Data/FIGSHARE/Pred_f51_raw-near-20260830.tif")
 habitat_raw_00 <- rast("Data/FIGSHARE/Pred_f00_raw-near-20260830.tif")
 
