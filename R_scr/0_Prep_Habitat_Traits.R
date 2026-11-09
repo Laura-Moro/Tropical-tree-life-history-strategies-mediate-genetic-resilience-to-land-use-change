@@ -83,8 +83,8 @@ sp_keep <- unique(pops_PR$sp_code)
 sp_keep <- intersect(sp_keep, names(habitat_raw_51))
 
 #these data are not on github
-habitat_raw_51 <- rast("Data/FIGSHARE/Pred_f51_raw-near-20260830.tif")
-habitat_raw_00 <- rast("Data/FIGSHARE/Pred_f00_raw-near-20260830.tif")
+habitat_raw_51 <- rast("Data/FIGSHARE/Pred_f51_raw-near-20260830.tif") # these files are too heavy to be on GitHub
+habitat_raw_00 <- rast("Data/FIGSHARE/Pred_f00_raw-near-20260830.tif") # these files are too heavy to be on GitHub
 
 # subset raster
 habitat_raw_51 <- habitat_raw_51[[sp_keep]]
