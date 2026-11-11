@@ -1,43 +1,34 @@
 ###################################################
 ### Compute proportion of forest between points ###
 ###################################################
-
 library(terra)
 library(sf)
 
-
 ################################################
 ### Load forest cover rasters
-f <- rast("Data/Derived/forest_change_resampled_modal-20251022.tif")
+f <- rast("Data/forest_change_resampled_modal-20251022.tif")
 f51 <- f[[1]]
 f00 <- f[[2]]
-
 
 ################################################
 ### Load SDM output habitat for genetic species
 
 # Get genetic species names
-filenames <- list.files("Data/LG/fst_sing")
-genetic_sp <- sapply(filenames[grep("_fst_hud.txt", filenames)], function(x) substring(x, 1, 6))
-combined_genetic_sp <- paste(genetic_sp, collapse = "|")
+traits <-  read.csv("Data/Original_trait_values.csv")
+genetic_sp <-traits$sp_code
 
-h51 <- rast("Data/Derived/Pred_f51_raw-near-20260830.tif")
-h00 <- rast("Data/Derived/Pred_f00_raw-near-20260830.tif")
-h51t <- rast("Data/Derived/Pred_f51-near-20260830.tif")
-h00t <- rast("Data/Derived/Pred_f00-near-20260830.tif")
+h51 <- rast("Data/FIGSHARE/Pred_f51_raw-near-20260830.tif")
+h00 <- rast("Data/FIGSHARE/Pred_f00_raw-near-20260830.tif")
 
 h51 <- h51[[names(h51) %in% genetic_sp]]
 h00 <- h00[[names(h00) %in% genetic_sp]]
-h51t <- h51t[[names(h51t) %in% genetic_sp]]
-h00t <- h00t[[names(h00t) %in% genetic_sp]]
 
-sdm <- rast("Data/Derived/raw_stack-20260830.tif")
+sdm <- rast("Data/FIGSHARE/raw_stack-20260830.tif") 
 sdm <- sdm[[names(sdm) %in% names(h51)]]
-
 
 ################################################
 ### Get coordiantes of sample locations and convert for downstream use
-sites <- read.csv("Data/LG/eco_samp.csv", row.names = 1)
+sites <- read.csv("Data/Sampling_location_Eco.csv")
 
 # Slight adjustment of a point because it falls off the shore with aggregated raster...
 sites$y[sites$Location=="LP"] <- 17.958
@@ -45,9 +36,8 @@ sites$y[sites$Location=="LP"] <- 17.958
 sites <- sites[order(sites$Location),]
 pts_df <- sites[,1:3]
 (names(pts_df)[1] <- c("name"))
-pts_sf <- st_as_sf(pts_df, coords = c("x", "y"), crs = 4326)
+pts_sf <- st_as_sf(pts_df, coords = c("lon", "lat"), crs = 4326)
 pts_sf <- st_transform(pts_sf, st_crs(f51))
-
 
 ################################################
 ### Extract coordinates and names, get pair index
@@ -56,7 +46,6 @@ pt_names <- pts_sf$name
 n <- nrow(coords)
 pair_index <- combn(n, 2)
 n_pairs <- ncol(pair_index)
-
 
 ################################################
 ### Create pairwise lines
@@ -186,7 +175,6 @@ for(sp in seq_along(names(h51))){
                               resDistsdm = as.vector(resDistsdm))
 }
     
-
 spdf <- do.call(rbind, sp_dist)
 
 head(spdf)

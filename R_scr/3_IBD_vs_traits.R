@@ -145,7 +145,7 @@ col_index <- cut(ibd_2$PC1, breaks = 10, labels = FALSE)
 
 # Plot IBD rank versus traits (PC1) with colored points
 # Each point's color reflects its PC1 value (dark green = low, light green = high)
-plot(ibd_2$PC1, ibd_2$rankMaf,
+plot(ibd_2$PC1, ibd_2$rank,
      col = cols[col_index],
      pch = 16,   # solid filled circle
      cex = 3     # point size
@@ -153,7 +153,7 @@ plot(ibd_2$PC1, ibd_2$rankMaf,
 
 # Add regression line
 # Fit and overlay a linear regression of rankMaf on PC1
-abline(lm(ibd_2$rankMaf ~ ibd_2$PC1), lwd = 3)
+abline(lm(ibd_2$rank ~ ibd_2$PC1), lwd = 3)
 
 
 # ---------------------------------------------------------------------------
@@ -168,7 +168,7 @@ cols <- colorRampPalette(c("darkgreen", "lightgreen"))(10)
 col_index <- cut(ibd_3$PC1, breaks = 10, labels = FALSE)
 
 # Plot IBD rank versus traits (PC1) with colored points, for ibd_3
-plot(ibd_3$PC1, ibd_3$rankMaf,
+plot(ibd_3$PC1, ibd_3$rank,
      col = cols[col_index],
      pch = 16,
      cex = 3
@@ -178,56 +178,5 @@ plot(ibd_3$PC1, ibd_3$rankMaf,
 # NOTE: bug — this regresses ibd_3$rankMaf on ibd_2$PC1 (mismatched
 # datasets). It should almost certainly be:
 #   abline(lm(ibd_3$rankMaf ~ ibd_3$PC1), lwd = 3)
-abline(lm(ibd_3$rankMaf ~ ibd_2$PC1), lwd = 3)
-
-
-ibd_2 <- ibd[ibd$N_Islands > 2, ]
-
-cols <- colorRampPalette(c("darkgreen", "lightgreen"))(10)
-
-# Map PC1 values to colors
-col_index <- cut(ibd_2$PC1, breaks = 10, labels = FALSE)
-
-# Plot IBD rank versus traits (PC1) with colored points
-plot(ibd_2$PC1, ibd_2$rankMaf,
-     col = cols[col_index],
-     pch = 16, 
-     cex=3
-)
-
-ibd_2 <- ibd[ibd$N_Islands > 2, ]
-
-cols <- colorRampPalette(c("darkgreen", "lightgreen"))(10)
-
-# Map PC1 values to colors
-col_index <- cut(ibd_2$PC1, breaks = 10, labels = FALSE)
-
-# Plot IBD rank versus traits (PC1) with colored points
-plot(ibd_2$PC1, ibd_2$rankMaf,
-     col = cols[col_index],
-     pch = 16, 
-     cex=3
-)
-
-# Add regression line
-abline(lm(ibd_2$rankMaf ~ ibd_2$PC1), lwd = 3)
-
-
-#species occuring in more then 2 islands 
-ibd_3 <- ibd[ibd$N_Islands > 2, ]
-
-cols <- colorRampPalette(c("darkgreen", "lightgreen"))(10)
-
-# Map PC1 values to colors
-col_index <- cut(ibd_3$PC1, breaks = 10, labels = FALSE)
-
-# Plot IBD rank versus traits (PC1) with colored points
-plot(ibd_3$PC1, ibd_3$rankMaf,
-     col = cols[col_index],
-     pch = 16, 
-     cex=3
-)
-
-# Add regression line
-abline(lm(ibd_3$rankMaf ~ ibd_3$PC1), lwd = 3)
+abline(lm(ibd_3$rank ~ ibd_2$PC1), lwd = 3)
 

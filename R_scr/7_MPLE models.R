@@ -13,12 +13,15 @@ library(raster) # For raster spatial data
 
 ##########################################
 ### Prep FST and other data
-dat <- readRDS("Data/LG/fst_PR.rds")
+fst <- read.table("Data/allspecies_fst_hud_PR.txt", header = TRUE, sep = "\t")
+fst$pair <- apply(fst[, c("pop1", "pop2")], 1, function(x)
+  paste(sort(x), collapse = ":")
+)
 
 ### Read and add forest proportion data
 habprop <- read.csv("Data/Sp-specific-pairwise_forest_proporotion.csv")
 
-dat <- cbind(dat, habprop[match(paste(dat$species, dat$pair), 
+dat <- cbind(fst, habprop[match(paste(fst$species, fst$pair), 
                                            paste(habprop$sp, habprop$pair)),
                                      c("geo", "cosDisth51", "resDisth51", 
                                        "cosDisth00", "resDisth00", 
@@ -29,16 +32,22 @@ dat <- cbind(dat, habprop[match(paste(dat$species, dat$pair),
                                        "cosDistsdm", "resDistsdm")])
 
 ### Get ENV site data
-env <- read.csv("Data/LG/smapling_rda.csv", row.names=1)
-env <- env[order(env$Location),]
-env$GEO <- as.factor(env$GEO)
+sites <- read.csv("Data/LG/eco_samp.csv", row.names = 1)
+sites <- sites[order(sites$Location),]
+sites$GEO <- as.factor(sites$GEO)
+
+#create a dummy variable for GEO
+sites$Alluvional <- as.numeric(sites$GEO == "Alluvional")
+sites$limestone  <- as.numeric(sites$GEO == "limestone")
+sites$vulcanic   <- as.numeric(sites$GEO == "vulcanic")
+sites$Ultramafic <- as.numeric(sites$GEO == "Ultramafic")
+
 
 ### Read site data
-sites <- read.csv("Data/LG/eco_samp.csv", row.names = 1)
 sites <- sites[order(sites$Location),]
 pts_df <- sites[,1:3]
 names(pts_df)[1] <- c("name")
-pts_sf <- st_as_sf(pts_df, coords = c("x", "y"), crs = 4326)
+pts_sf <- st_as_sf(pts_df, coords = c("lon", "lat"), crs = 4326)
 pts_sf <- st_transform(pts_sf, 9001)
 geo_distmat <- st_distance(pts_sf)
 df_geo <- data.frame(site1=rep(env$Location, each=nrow(geo_distmat)),
@@ -54,10 +63,13 @@ env_distmat <- as.matrix(daisy(env[,c("Pm","PSI","TM","GEO")], metric="gower"))
 clim_distmat <- as.matrix(daisy(env[,c("Pm","PSI","TM")], metric="euclidean"))
 
 soilcols <- c("Alluvional", "limestone", "vulcanic", "Ultramafic")
+
 for(i in seq_along(soilcols)){
-  env[,soilcols[i]] <- as.factor(env[,soilcols[i]])
+  sites[,soilcols[i]] <- as.factor(sites[,soilcols[i]])
 }
-soil_distmat <- as.matrix(daisy(env[,soilcols], metric="gower"))
+
+soil_distmat <- as.matrix(daisy(sites[,soilcols], metric="gower"))
+
 
 ### Merge Env distance matrix with data.frame
 df_env <- data.frame(site1=rep(env$Location, each=nrow(env_distmat)),
@@ -104,26 +116,28 @@ dat <- cbind(dat, z)
 
 ### Linearlize FST
 # dat$fst_lin <- dat$fst_maf0.5 / (1-dat$fst_maf0.5)
-dat$fst_lin <- dat$fst_sing / (1-dat$fst_sing)
+dat$fst_lin <- dat$fst / (1-dat$fst)
 
 ### ADD TRAIT DATA
-trait_dat <- read.csv("Data/LG/Species_level.csv", row.names = 1)
+#trait_dat <- read.csv("Data/LG/Species_level.csv", row.names = 1)
+trait_dat <- read.csv("Data/Original_trait_values.csv")
+
 trait_dat$ss.log <- log(trait_dat$SM)
 trait_dat$wd <- trait_dat$WD
 trait_dat$sla.log <- log(trait_dat$SLA)
 trait_dat$thk.log <- log(trait_dat$LTH)
 trait_dat$maxht <- trait_dat$MH
 
-foctraits <- trait_dat[trait_dat$Sp_code %in% dat$sp, 
-                       c("wd","thk.log","sla.log","maxht","ss.log", "PC1", "PC2")]
+foctraits <- trait_dat[trait_dat$sp_code %in% dat$species, 
+                       c("wd","thk.log","sla.log","maxht","ss.log", "PC1")]
 foctraits.z <- apply(foctraits, 2, scale)
-rownames(foctraits.z) <- rownames(foctraits) <- trait_dat$Sp_code[trait_dat$Sp_code %in% dat$sp]
+rownames(foctraits.z) <- rownames(foctraits) <- trait_dat$sp_code[trait_dat$sp_code %in% dat$species]
 foctraits.z[is.na(foctraits.z)] <- 0
 (foctraits.z <- as.data.frame(foctraits.z))
 
+
 ### PRINCIPLE COMPONENTS ANALYSIS OF TRAITS
 dat$pc1 <- foctraits.z$PC1[match(dat$species, rownames(foctraits.z))]
-dat$pc2 <- foctraits.z$PC2[match(dat$species, rownames(foctraits.z))]
 dat$ss <- foctraits.z$ss.log[match(dat$species, rownames(foctraits.z))]
 dat$wd <- foctraits.z$wd[match(dat$species, rownames(foctraits.z))]
 dat$sla <- foctraits.z$sla.log[match(dat$species, rownames(foctraits.z))]

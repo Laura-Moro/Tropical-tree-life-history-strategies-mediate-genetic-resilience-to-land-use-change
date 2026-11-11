@@ -24,7 +24,7 @@ PR_I_stats$ratio <- PR_I_stats$SH_00 / PR_I_stats$SH_51
 #select the columns
 cols <- PR_I_stats[,c("delta","ratio","PC1","maxht.z","sla.log.z","ss.log.z","thk.log.z","wd.z")]
 
-#runf ro PI 
+#run fro PI 
 coeff_Pi <- NULL
 for (colname in colnames(cols)) {
   coeff <- summary(lm(scale(PR_I_stats$pi_scaled) ~ scale(PR_I_stats[, colname])))$coefficients[2, ]
@@ -196,10 +196,10 @@ coeff_Ho$sp_name <- Pop_stats_PR$sp_name[match(coeff_Ho$sp_code,Pop_stats_PR$sp_
 ######plot
 par(mar = c(4, 15, 0.5, 0.5))
 
-# Order alphabetically by species name
-ord <- order(coeff_Ho$sp_name)
-coeff_Ho_ord <- coeff_Ho[ord, ]
-sp_names_ord <- (coeff_Ho$sp_name[ord])
+# # Order alphabetically by species name
+# ord <- order(coeff_Ho$sp_name)
+# coeff_Ho_ord <- coeff_Ho[ord, ]
+# sp_names_ord <- (coeff_Ho$sp_name[ord])
 
 #oder by coefficient
 ord <- order(coeff_Ho$Estimate)
@@ -297,6 +297,7 @@ summary(lm(coeff_Ho_ord$PC1 ~ coeff_Ho_ord$Estimate))
 
 
 # Map PC1 values to colors
+cols <- colorRampPalette(c("darkgreen", "lightgreen"))(10)
 col_index <- cut(coeff_Ho_ord$PC1, breaks = 10, labels = FALSE)
 
 par(mar = c(5, 5, 1, 1))
@@ -313,41 +314,41 @@ plot(coeff_Ho_ord$Estimate,coeff_Ho_ord$PC1,
 abline(lm(coeff_Ho_ord$Estimate ~ coeff_Ho_ord$PC1 ), lwd = 3)
 abline(h = 0, lwd = 2, lty = 2, col='gray')
 
-######correlation plot figure S6 --> I have to finish this! 
-colnames(dataf2)
+
+######correlation plot figure S6 --> The results here are changing
+colnames(Pop_stats_PR)
 coeff3b<-NULL
-for(j in c(18:21)){
+for(j in c(10:11)){
   
   coeff3<-NULL
-  keep<-names(which(c(unlist(by(Pop_stats_PR$obs_het,Pop_stats_PR$sp_code,function(x) length(x))))>4))
+  keep<-names(which(c(unlist(by(Pop_stats_PR$obs_het, Pop_stats_PR$sp_code,function(x) length(x))))>4))
   for(i in keep){
-    #dataf2<-dataf[which(dataf$sps==i),]
+    dataf2<-Pop_stats_PR[which(Pop_stats_PR$sp_code==i),]
     coeff<-summary(lm(scale(dataf2$obs_het)~scale(dataf2[,j])))$coefficients[2,]
     coeff3<-rbind.data.frame(coeff3,coeff)
   }
   coeff3b <- cbind(coeff3b,coeff3[,1])
 }
 
-
 head(coeff3b)
 rownames(coeff3b)<-keep
-colnames(coeff3b)<-colnames(dataf2)[18:21]
+colnames(coeff3b)<-colnames(Pop_stats_PR)[10:11]
 coeff3b<-as.data.frame(coeff3b)
 
-specs<-read.table('Fst_traits_across_island.txt',header = T)
-head(specs)
-rownames(specs)<-specs$Species
+head(coeff_Ho_ord)
+rownames(traits)<-traits$sp_code
+traits_f <- traits[rownames(traits) %in% keep, ]
+traits_filt <- traits_f[,c("PC1","maxht.z","sla.log.z","ss.log.z","thk.log.z","wd.z")]
 
-out<-merge(coeff3b,specs,by = 0 )
+out<-merge(coeff3b,traits_filt ,by = 0 )
 head(out)
 
 require(corrplot)
-matrice_spearman <- cor(out[,c(2:5,17,20,22,23,24,30)], method = "pearson", use = "complete.obs")
-msub<-matrice_spearman[c(5:nrow(matrice_spearman)),c(1:4)]
-msub<-msub[c(6,1:5),]
-res <- cor.mtest(out[,c(2:5,17,20,22,23,24,30)], method = "pearson",conf.level = 0.95)
-rsub<-res$p[c(5:nrow(matrice_spearman)),c(1:4)]
-rsub<-rsub[c(6,1:5),]
+matrice_spearman <- cor(out[,c(-1)], method = "pearson", use = "complete.obs")
+msub<-matrice_spearman[c(3:nrow(matrice_spearman)),c(1:2)]
+res <- cor.mtest(out[,c(-1)], method = "pearson",conf.level = 0.95)
+rsub<-res$p[c(3:nrow(matrice_spearman)),c(1:2)]
+
 #signes <- ifelse(matrice_spearman > 0, "+", "-")
 corrplot(msub,
          p.mat = rsub,

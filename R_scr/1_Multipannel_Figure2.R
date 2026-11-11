@@ -17,7 +17,7 @@ library(ggplot2)
 
 files <- c("AMYELE", "CASARB", "CASSYL", "DACEXC", "GYMLUC", "KRUFER", 
            "POIFLO", "SCHMOR", "TABHET", "BURSIM", "CASGUI", "FAROCC",
-           "HIRRUG", "MANBID", "MYRDEF", "PREMON", "SLOBER", "MICGUY") #,"CECSCH")
+           "HIRRUG", "MANBID", "MYRDEF", "PREMON", "SLOBER", "MICGUY") #"CECSCH")
 
 files <- ("CECSCH")
 
